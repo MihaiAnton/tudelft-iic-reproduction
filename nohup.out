@@ -1,0 +1,169 @@
+Python 3.7.10 (default, Feb 26 2021, 10:16:00) 
+[Clang 10.0.0 ] :: Anaconda, Inc. on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> >>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> >>> Python 3.7.10 (default, Feb 26 2021, 10:16:00) 
+[Clang 10.0.0 ] :: Anaconda, Inc. on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+KeyboardInterrupt
+>>> 
+
+WARNING: Python 2.7 is not recommended. 
+This version is included in macOS for compatibility with legacy software. 
+Future versions of macOS will not include Python 2.7. 
+Instead, it is recommended that you transition to using 'python3' from within Terminal.
+
+Python 2.7.16 (default, Nov 23 2020, 08:01:20) 
+[GCC Apple LLVM 12.0.0 (clang-1200.0.30.4) [+internal-os, ptrauth-isa=sign+stri on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>>   File "<stdin>", line 1
+    -m code.scripts.segmentation.segmentation_twohead 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --mode IID --dataset Coco164kCuratedFew 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --dataset_root /Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/datasets/cocostuff-data
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --model_ind 555 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --arch SegmentationNet10aTwoHead 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --num_epochs 4800 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --lr 0.0001 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --lamb_A 1.0 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --lamb_B 1.5 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --num_sub_heads 1 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --batch_sz 120 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --num_dataloaders 1 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --use_coarse_labels 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --output_k_A 15 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --output_k_B 3 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --gt_k 3 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --pre_scale_all 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --pre_scale_factor 0.33 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --input_sz 128 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --half_T_side_sparse_min 0 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --half_T_side_sparse_max 0 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --half_T_side_dense 10 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --include_rgb  
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --coco_164k_curated_version 6 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --use_uncollapsed_loss 
+    ^
+IndentationError: unexpected indent
+>>>   File "<stdin>", line 1
+    --batchnorm_track > gnoded1_gpu0123_m555_r1.out &
+    ^
+IndentationError: unexpected indent
+>>> >>> 
+  File "<stdin>", line 0
+    
+    ^
+SyntaxError: I/O error while reading
+>>> 
+  File "<stdin>", line 0
+    
+    ^
+SyntaxError: I/O error while reading
+>>> 

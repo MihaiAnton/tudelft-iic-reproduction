@@ -22,20 +22,20 @@ given_config.out_dir = os.path.join(given_config.out_root,
 reloaded_config_path = os.path.join(given_config.out_dir, "config.pickle")
 print("Loading restarting config from: %s" % reloaded_config_path)
 with open(reloaded_config_path, "rb") as config_f:
-  config = pickle.load(config_f)
+    config = pickle.load(config_f)
 assert (config.model_ind == given_config.model_ind)
 
 if not hasattr(config, "num_sub_heads"):
-  config.num_sub_heads = config.num_heads
+    config.num_sub_heads = config.num_heads
 
 if not hasattr(config, "twohead"):
-  config.twohead = ("TwoHead" in config.arch)
+    config.twohead = ("TwoHead" in config.arch)
 
 net = archs.__dict__[config.arch](config)
 model_path = os.path.join(config.out_dir, "best_net.pytorch")
 net.load_state_dict(
-  torch.load(model_path, map_location=lambda storage, loc: storage))
-net.cuda()
+    torch.load(model_path, map_location=lambda storage, loc: storage))
+net
 net = torch.nn.DataParallel(net)
 
 # for name, param in net.named_parameters():
@@ -47,8 +47,8 @@ print(net)
 print("--------------")
 
 for m in net.modules():
-  if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):
-    if not (m.track_running_stats):
-      print(m)
-      print("not tracking stats for this batchnorm")
-      # print("... found a batchnorm, tracking: %s" % m.track_running_stats)
+    if isinstance(m, nn.BatchNorm2d) or isinstance(m, nn.BatchNorm1d):
+        if not (m.track_running_stats):
+            print(m)
+            print("not tracking stats for this batchnorm")
+            # print("... found a batchnorm, tracking: %s" % m.track_running_stats)
