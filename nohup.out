@@ -167,3 +167,44 @@ SyntaxError: I/O error while reading
     ^
 SyntaxError: I/O error while reading
 >>> 
+/Users/mihai/opt/anaconda3/envs/iic/lib/python3.7/site-packages/sklearn/utils/linear_assignment_.py:22: FutureWarning: The linear_assignment_ module is deprecated in 0.21 and will be removed from 0.23. Use scipy.optimize.linear_sum_assignment instead.
+  FutureWarning)
+usage: segmentation_twohead.py [-h] --model_ind MODEL_IND --arch ARCH
+                               [--opt OPT] [--mode MODE] --dataset DATASET
+                               --dataset_root DATASET_ROOT
+                               [--use_coarse_labels]
+                               [--fine_to_coarse_dict FINE_TO_COARSE_DICT]
+                               [--include_things_labels]
+                               [--incl_animal_things]
+                               [--coco_164k_curated_version COCO_164K_CURATED_VERSION]
+                               --gt_k GT_K --output_k_A OUTPUT_K_A
+                               --output_k_B OUTPUT_K_B [--lamb_A LAMB_A]
+                               [--lamb_B LAMB_B] [--lr LR]
+                               [--lr_schedule LR_SCHEDULE [LR_SCHEDULE ...]]
+                               [--lr_mult LR_MULT] [--use_uncollapsed_loss]
+                               [--mask_input] [--num_epochs NUM_EPOCHS]
+                               --batch_sz BATCH_SZ
+                               [--num_dataloaders NUM_DATALOADERS]
+                               [--num_sub_heads NUM_SUB_HEADS]
+                               [--out_root OUT_ROOT] [--restart]
+                               [--save_freq SAVE_FREQ] [--test_code]
+                               [--head_B_first] [--batchnorm_track]
+                               [--no_sobel] [--include_rgb] [--pre_scale_all]
+                               [--pre_scale_factor PRE_SCALE_FACTOR]
+                               [--input_sz INPUT_SZ] [--use_random_scale]
+                               [--scale_min SCALE_MIN] [--scale_max SCALE_MAX]
+                               [--jitter_brightness JITTER_BRIGHTNESS]
+                               [--jitter_contrast JITTER_CONTRAST]
+                               [--jitter_saturation JITTER_SATURATION]
+                               [--jitter_hue JITTER_HUE] [--flip_p FLIP_P]
+                               [--use_random_affine]
+                               [--aff_min_rot AFF_MIN_ROT]
+                               [--aff_max_rot AFF_MAX_ROT]
+                               [--aff_min_shear AFF_MIN_SHEAR]
+                               [--aff_max_shear AFF_MAX_SHEAR]
+                               [--aff_min_scale AFF_MIN_SCALE]
+                               [--aff_max_scale AFF_MAX_SCALE]
+                               [--half_T_side_dense HALF_T_SIDE_DENSE]
+                               [--half_T_side_sparse_min HALF_T_SIDE_SPARSE_MIN]
+                               [--half_T_side_sparse_max HALF_T_SIDE_SPARSE_MAX]
+segmentation_twohead.py: error: the following arguments are required: --arch, --gt_k, --output_k_A, --output_k_B, --batch_sz

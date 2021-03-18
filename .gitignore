@@ -108,3 +108,4 @@ venv.bak/
 /datasets/potsdam-data/
 /datasets/train2017.zip
 /datasets/val2017.zip
+/models
