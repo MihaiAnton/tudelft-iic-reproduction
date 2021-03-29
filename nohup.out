@@ -53,7 +53,7 @@ Python 2.7.16 (default, Nov 23 2020, 08:01:20)
 [GCC Apple LLVM 12.0.0 (clang-1200.0.30.4) [+internal-os, ptrauth-isa=sign+stri on darwin
 Type "help", "copyright", "credits" or "license" for more information.
 >>>   File "<stdin>", line 1
-    -m code.scripts.segmentation.segmentation_twohead 
+    -m src.scripts.segmentation.segmentation_twohead 
     ^
 IndentationError: unexpected indent
 >>>   File "<stdin>", line 1

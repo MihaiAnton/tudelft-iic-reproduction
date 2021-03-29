@@ -1,6 +1,98 @@
-Into script
-Loading restarting config from: /Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/out/555/config.pickle
-In training
-Creating paired dataloader 0 out of 1 time 2021-03-18 12:04:44.158589
-generating fine to coarse files in /users/xuji/iid/iid_private/code/datasets/segmentation/util/out/fine_to_coarse_dict.pickle ...
-/Users/mihai/Documents/School/TUDelft/DeepLearning/IIC
+Given config: Config: -----
+model_ind: 555
+arch: SegmentationNet10aTwoHead
+opt: Adam
+mode: IID
+dataset: Coco164kCuratedFew
+dataset_root: /Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/datasets/cocostuff-data
+use_coarse_labels: True
+fine_to_coarse_dict: /Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/code/datasets/segmentation/util/out/fine_to_coarse_dict.pickle
+include_things_labels: False
+incl_animal_things: False
+coco_164k_curated_version: 6
+gt_k: 3
+output_k_A: 15
+output_k_B: 3
+lamb_A: 1.0
+lamb_B: 1.5
+lr: 0.0001
+lr_schedule: []
+lr_mult: 0.1
+use_uncollapsed_loss: True
+mask_input: False
+num_epochs: 4
+batch_sz: 10
+num_dataloaders: 1
+num_sub_heads: 1
+out_root: /Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/out
+restart: False
+save_freq: 1
+test_code: False
+head_B_first: False
+batchnorm_track: True
+no_sobel: False
+include_rgb: True
+pre_scale_all: True
+pre_scale_factor: 0.33
+input_sz: 128
+use_random_scale: False
+scale_min: 0.6
+scale_max: 1.4
+jitter_brightness: 0.4
+jitter_contrast: 0.4
+jitter_saturation: 0.4
+jitter_hue: 0.125
+flip_p: 0.5
+use_random_affine: False
+aff_min_rot: -30.0
+aff_max_rot: 30.0
+aff_min_shear: -10.0
+aff_max_shear: 10.0
+aff_min_scale: 0.8
+aff_max_scale: 1.2
+half_T_side_dense: 10
+half_T_side_sparse_min: 0
+half_T_side_sparse_max: 0
+out_dir: /Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/out/555
+dataloader_batch_sz: 10
+output_k: 3
+use_doersch_datasets: False
+eval_mode: hung
+in_channels: 5
+using_IR: False
+----------
+Train 1  2021-03-18 18:53:11.259196
+Creating paired dataloader 0 out of 1 time 2021-03-18 18:53:11.259218
+label_orig_coarse_inds for this dataset: 
+[23, 22, 21]
+Specific type of _Coco164kCuratedFew dataset: Coco164kFew_Stuff_6
+label_orig_coarse_inds for this dataset: 
+[23, 22, 21]
+Specific type of _Coco164kCuratedFew dataset: Coco164kFew_Stuff_6
+Length of paired datasets vector 1
+Number of batches per epoch: 3666
+1
+label_orig_coarse_inds for this dataset: 
+[23, 22, 21]
+Specific type of _Coco164kCuratedFew dataset: Coco164kFew_Stuff_6
+2
+label_orig_coarse_inds for this dataset: 
+[23, 22, 21]
+Specific type of _Coco164kCuratedFew dataset: Coco164kFew_Stuff_6
+1
+label_orig_coarse_inds for this dataset: 
+[23, 22, 21]
+Specific type of _Coco164kCuratedFew dataset: Coco164kFew_Stuff_6
+2
+label_orig_coarse_inds for this dataset: 
+[23, 22, 21]
+Specific type of _Coco164kCuratedFew dataset: Coco164kFew_Stuff_6
+Train 2  2021-03-18 18:53:11.286875
+Train 3  2021-03-18 18:53:11.343320
+Train 4  2021-03-18 18:53:11.343500
+Train 5  2021-03-18 18:53:11.343655
+Results
+Train 5.1  2021-03-18 18:53:11.343663
+Train 5.2  2021-03-18 18:53:11.343668
+Eval 1  2021-03-18 18:53:11.343673
+Eval 2  2021-03-18 18:53:11.343772
