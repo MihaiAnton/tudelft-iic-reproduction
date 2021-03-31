@@ -55,8 +55,8 @@ class DoerschHead(nn.Module):
                                         self.patch_side))):
             print(ni, k, h, w)
             print(ni2, k2, h2, w2)
-            print patches1.size()
-            print patches2.size()
+            print(patches1.size())
+            print(patches2.size())
             print(ni3, nf)
             assert (False)
 
