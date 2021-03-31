@@ -12,7 +12,6 @@ import os
 import matplotlib.pyplot as plt
 
 import argparse
-import itertools
 import pickle
 import sys
 from datetime import datetime
@@ -33,6 +32,7 @@ matplotlib.use('Agg')
 # Options ----------------------------------------------------------------------
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument("--model_ind", type=int, required=True)
 parser.add_argument("--arch", type=str, required=True)
 parser.add_argument("--opt", type=str, default="Adam")
@@ -120,11 +120,14 @@ parser.add_argument("--aff_max_scale", type=float, default=1.2)
 parser.add_argument("--half_T_side_dense", type=int, default=0)
 parser.add_argument("--half_T_side_sparse_min", type=int, default=0)
 parser.add_argument("--half_T_side_sparse_max", type=int, default=0)
+parser.add_argument("--nocuda", default=False, action="store_true")
 
 config = parser.parse_args()
 
+
 # Setup ------------------------------------------------------------------------
 
+no_cuda = config.nocuda
 config.out_dir = os.path.join(config.out_root, str(config.model_ind))
 config.dataloader_batch_sz = int(config.batch_sz / config.num_dataloaders)
 assert (config.mode == "IID")
@@ -150,6 +153,7 @@ if config.restart:
         config = pickle.load(config_f)
     assert (config.model_ind == given_config.model_ind)
     config.restart = True
+    config.nocuda = no_cuda
 
     # copy over new num_epochs and lr schedule
     config.num_epochs = given_config.num_epochs
@@ -170,7 +174,10 @@ def train():
         dict = torch.load(os.path.join(config.out_dir, dict_name),
                           map_location=lambda storage, loc: storage)
         net.load_state_dict(dict["net"])
-    net.cuda()
+
+    print(config.nocuda)
+
+    net.cuda() if not config.nocuda else None
     net = torch.nn.DataParallel(net)
     net.train()
 
@@ -260,7 +267,7 @@ def train():
             avg_loss_no_lamb = 0.
             avg_loss_count = 0
 
-            for tup in itertools.izip(*iterators):
+            for tup in zip(*iterators):
                 net.module.zero_grad()
 
                 if not config.no_sobel:
@@ -270,14 +277,20 @@ def train():
 
                 all_img1 = torch.zeros(config.batch_sz, pre_channels,
                                        config.input_sz, config.input_sz).to(
-                    torch.float32).cuda()
+                    torch.float32)
                 all_img2 = torch.zeros(config.batch_sz, pre_channels,
                                        config.input_sz, config.input_sz).to(
-                    torch.float32).cuda()
+                    torch.float32)
                 all_affine2_to_1 = torch.zeros(config.batch_sz, 2, 3).to(
-                    torch.float32).cuda()
+                    torch.float32)
                 all_mask_img1 = torch.zeros(config.batch_sz, config.input_sz,
-                                            config.input_sz).to(torch.float32).cuda()
+                                            config.input_sz).to(torch.float32)
+
+                if not config.nocuda:
+                    all_img1.cuda()
+                    all_img2.cuda()
+                    all_affine2_to_1.cuda()
+                    all_mask_img1.cuda()
 
                 curr_batch_sz = tup[0][0].shape[0]
                 for d_i in range(config.num_dataloaders):
@@ -306,9 +319,9 @@ def train():
 
                 if (not config.no_sobel):
                     all_img1 = sobel_process(all_img1, config.include_rgb,
-                                             using_IR=config.using_IR)
+                                             using_IR=config.using_IR, cuda_enabled=not config.nocuda)
                     all_img2 = sobel_process(all_img2, config.include_rgb,
-                                             using_IR=config.using_IR)
+                                             using_IR=config.using_IR, cuda_enabled=not config.nocuda)
 
                 x1_outs = net(all_img1, head=head)
                 x2_outs = net(all_img2, head=head)
@@ -356,7 +369,8 @@ def train():
                 avg_loss_batch.backward()
                 optimiser.step()
 
-                torch.cuda.empty_cache()
+                if not config.nocuda:
+                    torch.cuda.empty_cache()
 
                 b_i += 1
                 if b_i == 2 and config.test_src:
@@ -432,7 +446,8 @@ def train():
                           "w") as text_file:
                     text_file.write("%s" % config)
 
-            net.module.cuda()
+            if not config.nocuda:
+                net.module.cuda()
 
         with open(os.path.join(config.out_dir, "config.pickle"), 'wb') as outfile:
             pickle.dump(config, outfile)

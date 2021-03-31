@@ -8,7 +8,6 @@ import src.archs as archs
 import matplotlib.pyplot as plt
 
 import argparse
-import itertools
 import os
 import pickle
 import sys
@@ -284,7 +283,7 @@ for e_i in range(next_epoch, config.num_epochs):
             iterators = (d for d in dataloaders)
 
             b_i = 0
-            for tup in itertools.izip(*iterators):
+            for tup in zip(*iterators):
                 net.module.zero_grad()
 
                 # one less because this is before sobel
@@ -315,8 +314,10 @@ for e_i in range(next_epoch, config.num_epochs):
                 all_imgs = all_imgs[:curr_total_batch_sz, :, :, :]
                 all_imgs_tf = all_imgs_tf[:curr_total_batch_sz, :, :, :]
 
-                all_imgs = sobel_process(all_imgs, config.include_rgb)
-                all_imgs_tf = sobel_process(all_imgs_tf, config.include_rgb)
+                all_imgs = sobel_process(
+                    all_imgs, config.include_rgb, cuda_enabled=not config.nocuda)
+                all_imgs_tf = sobel_process(
+                    all_imgs_tf, config.include_rgb, cuda_enabled=not config.nocuda)
 
                 x_outs = net(all_imgs, head=head)
                 x_tf_outs = net(all_imgs_tf, head=head)

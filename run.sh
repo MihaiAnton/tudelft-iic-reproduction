@@ -1,5 +1,6 @@
 export CUDA_VISIBLE_DEVICES=0,1,2,3 && \
     python -m src.scripts.segmentation.segmentation_twohead \
+        --nocuda \
         --mode IID \
         --out_root /Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/out \
         --dataset Coco164kCuratedFew \

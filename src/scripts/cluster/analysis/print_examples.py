@@ -1,5 +1,4 @@
 import argparse
-import itertools
 import os
 import pickle
 
@@ -87,7 +86,7 @@ results_f = os.path.join(render_out_dir, "results.txt")
 
 iterators = (d for d in [dataloader, render_dataloader])
 
-for tup in itertools.izip(*iterators):
+for tup in zip(*iterators):
     train_batch = tup[0]
     render_batch = tup[1]
 

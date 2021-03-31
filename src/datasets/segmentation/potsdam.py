@@ -93,7 +93,7 @@ class _Potsdam(data.Dataset):
     def _load_data(self, image_id):
         raise NotImplementedError()
 
-    def _prepare_train(self, index, img):
+    def _prepare_train(self, index, img, ):
         # This returns gpu tensors.
         # label is passed in canonical [0 ... 181] indexing
 
@@ -218,7 +218,7 @@ class _Potsdam(data.Dataset):
 
         return img1, img2, affine2_to_1, mask_img1
 
-    def _prepare_train_single(self, index, img):
+    def _prepare_train_single(self, index, img, ):
         # Returns one pair only, i.e. without transformed second image.
         # Used for standard CNN training (baselines).
         # This returns gpu tensors.
@@ -362,7 +362,7 @@ class _Potsdam(data.Dataset):
             self.images.append(image)
             self.labels.append(label)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index, cuda_enabled):
         if self.preload:
             image, label = self.images[index], self.labels[index]
         else:
@@ -371,9 +371,9 @@ class _Potsdam(data.Dataset):
 
         if self.purpose == "train":
             if not self.single_mode:
-                return self._prepare_train(index, image)
+                return self._prepare_train(index, image, cuda_enabled)
             else:
-                return self._prepare_train_single(index, image)
+                return self._prepare_train_single(index, image, cuda_enabled)
         else:
             assert (self.purpose == "test")
             return self._prepare_test(index, image, label)

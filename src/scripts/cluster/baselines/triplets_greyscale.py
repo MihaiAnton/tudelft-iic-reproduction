@@ -6,7 +6,6 @@ import src.archs as archs
 import matplotlib.pyplot as plt
 
 import argparse
-import itertools
 import os
 import pickle
 import sys
@@ -202,7 +201,7 @@ for e_i in range(next_epoch, config.num_epochs):
     iterators = (d for d in train_dataloaders)
 
     b_i = 0
-    for tup in itertools.izip(*iterators):
+    for tup in zip(*iterators):
         net.module.zero_grad()
 
         imgs_orig = tup[0][0].cuda()
