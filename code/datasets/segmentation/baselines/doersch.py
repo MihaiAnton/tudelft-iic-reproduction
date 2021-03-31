@@ -23,96 +23,97 @@ deviation of the remaining channel)."
 
 
 class DoerschDataset(data.Dataset):
-  def __init__(self, config, base_dataset):
-    # base_dataset already constructed with config
-    super(DoerschDataset, self).__init__()
-    self.base_dataset = base_dataset
+    def __init__(self, config, base_dataset):
+        # base_dataset already constructed with config
+        super(DoerschDataset, self).__init__()
+        self.base_dataset = base_dataset
 
-    if config.include_rgb and self.base_dataset.purpose == "train":
-      self.input_sz = config.input_sz
-      self.stddev_fname = os.path.join(config.doersch_stats,
-                                       "%s_stats.pickle" % config.dataset)
-      if not os.path.exists(self.stddev_fname):
-        self.make_stats_file()
+        if config.include_rgb and self.base_dataset.purpose == "train":
+            self.input_sz = config.input_sz
+            self.stddev_fname = os.path.join(config.doersch_stats,
+                                             "%s_stats.pickle" % config.dataset)
+            if not os.path.exists(self.stddev_fname):
+                self.make_stats_file()
 
-      with open(self.stddev_fname, "rb") as f:
-        stats = pickle.load(f)
-        self.stddev = stats["stddev"]
-        self.mean = stats["mean"]
-      print("created Doersch dataset wrapping %s, stddev %s" % (config.dataset,
-                                                                self.stddev))
-      sysout.flush()
+            with open(self.stddev_fname, "rb") as f:
+                stats = pickle.load(f)
+                self.stddev = stats["stddev"]
+                self.mean = stats["mean"]
+            print("created Doersch dataset wrapping %s, stddev %s" % (config.dataset,
+                                                                      self.stddev))
+            sysout.flush()
 
-  def __getitem__(self, index):
-    tup = self.base_dataset.__getitem__(index)
+    def __getitem__(self, index):
+        tup = self.base_dataset.__getitem__(index)
 
-    if self.base_dataset.purpose == "test":
-      return tup
-    else:
-      assert (self.base_dataset.purpose == "train")
-      assert (self.base_dataset.single_mode)
-      img, _ = tup
+        if self.base_dataset.purpose == "test":
+            return tup
+        else:
+            assert (self.base_dataset.purpose == "train")
+            assert (self.base_dataset.single_mode)
+            img, _ = tup
 
-      channel_pair = np.random.choice(3, size=2, replace=False)
-      remaining_channel = 3 - channel_pair.sum()
+            channel_pair = np.random.choice(3, size=2, replace=False)
+            remaining_channel = 3 - channel_pair.sum()
 
-      mean = float(self.mean[remaining_channel])
-      stddev = float(self.stddev[remaining_channel] / 100.)
-      noise = torch.zeros((2, self.input_sz, self.input_sz),
-                          dtype=torch.float32).cuda()
-      noise = noise.normal_(mean, stddev)
+            mean = float(self.mean[remaining_channel])
+            stddev = float(self.stddev[remaining_channel] / 100.)
+            noise = torch.zeros((2, self.input_sz, self.input_sz),
+                                dtype=torch.float32).cuda()
+            noise = noise.normal_(mean, stddev)
 
-      # noise = np.random.normal(loc=mean,
-      #                         scale=stddev,
-      #                         size=(2, self.input_sz, self.input_sz))
-      # noise = torch.from_numpy(noise)
+            # noise = np.random.normal(loc=mean,
+            #                         scale=stddev,
+            #                         size=(2, self.input_sz, self.input_sz))
+            # noise = torch.from_numpy(noise)
 
-      for c in xrange(2):
-        img[channel_pair[c], :, :] = noise[c, :, :]
+            for c in range(2):
+                img[channel_pair[c], :, :] = noise[c, :, :]
 
-      return (img,) + tup[1:]
+            return (img,) + tup[1:]
 
-  def __len__(self):
-    return self.base_dataset.__len__()
+    def __len__(self):
+        return self.base_dataset.__len__()
 
-  def make_stats_file(self):
-    print("making stats")
-    sysout.flush()
-
-    # get mean and stddev of all rgb values in set
-    num_imgs = len(self.base_dataset)
-    pixels = np.zeros((num_imgs * self.input_sz * self.input_sz, 3),
-                      dtype=np.float32)
-    count = 0
-    for i in xrange(num_imgs):
-      if i % (num_imgs / 10) == 0:
-        print("img %d out of %d" % (i, num_imgs))
+    def make_stats_file(self):
+        print("making stats")
         sysout.flush()
 
-      tup = self.base_dataset[i]
-      if self.base_dataset.purpose == "train":
-        assert (self.base_dataset.single_mode)
-        img, mask = tup
-      else:
-        assert (False)
+        # get mean and stddev of all rgb values in set
+        num_imgs = len(self.base_dataset)
+        pixels = np.zeros((num_imgs * self.input_sz * self.input_sz, 3),
+                          dtype=np.float32)
+        count = 0
+        for i in range(num_imgs):
+            if i % (num_imgs / 10) == 0:
+                print("img %d out of %d" % (i, num_imgs))
+                sysout.flush()
 
-      img = img.permute(1, 2, 0)  # features last
+            tup = self.base_dataset[i]
+            if self.base_dataset.purpose == "train":
+                assert (self.base_dataset.single_mode)
+                img, mask = tup
+            else:
+                assert (False)
 
-      img = img[:, :, :3]  # rgb - then grey/sobel if using, then ir if using
+            img = img.permute(1, 2, 0)  # features last
 
-      num = mask.sum()
-      img = img.masked_select(mask.unsqueeze(2)).view(num, 3)  # n, c
+            # rgb - then grey/sobel if using, then ir if using
+            img = img[:, :, :3]
 
-      assert (len(img.shape) == 2)
-      img = img.cpu().numpy()
+            num = mask.sum()
+            img = img.masked_select(mask.unsqueeze(2)).view(num, 3)  # n, c
 
-      pixels[count:count + num, :] = img
-      count += num
+            assert (len(img.shape) == 2)
+            img = img.cpu().numpy()
 
-    pixels = pixels[:count]
-    stddev = np.std(pixels, axis=0)
-    mean = np.mean(pixels, axis=0)
+            pixels[count:count + num, :] = img
+            count += num
 
-    print("got rgb mean %s and std %s" % (stddev, mean))
-    with open(self.stddev_fname, "wb") as outfile:
-      pickle.dump({"stddev": stddev, "mean": mean}, outfile)
+        pixels = pixels[:count]
+        stddev = np.std(pixels, axis=0)
+        mean = np.mean(pixels, axis=0)
+
+        print("got rgb mean %s and std %s" % (stddev, mean))
+        with open(self.stddev_fname, "wb") as outfile:
+            pickle.dump({"stddev": stddev, "mean": mean}, outfile)
