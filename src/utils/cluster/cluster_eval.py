@@ -26,15 +26,35 @@ def _clustering_get_data(config, net, dataloader, sobel=False,
                                    dtype=torch.int32).cuda() for _ in
                        range(config.num_sub_heads)]
 
+    if not config.nocuda:
+        flat_targets_all = torch.zeros((num_batches * config.batch_sz),
+                                       dtype=torch.int32).cuda()
+        flat_predss_all = [torch.zeros((num_batches * config.batch_sz),
+                                       dtype=torch.int32).cuda() for _ in
+                           range(config.num_sub_heads)]
+    else:
+        flat_targets_all = torch.zeros((num_batches * config.batch_sz),
+                                       dtype=torch.int32)
+        flat_predss_all = [torch.zeros((num_batches * config.batch_sz),
+                                       dtype=torch.int32) for _ in
+                           range(config.num_sub_heads)]
+
     if get_soft:
-        soft_predss_all = [torch.zeros((num_batches * config.batch_sz,
-                                        config.output_k),
-                                       dtype=torch.float32).cuda() for _ in range(
-            config.num_sub_heads)]
+        if not config.nocuda:
+            soft_predss_all = [torch.zeros((num_batches * config.batch_sz,
+                                            config.output_k),
+                                           dtype=torch.float32).cuda() for _ in range(
+                config.num_sub_heads)]
+        else:
+            soft_predss_all = [torch.zeros((num_batches * config.batch_sz,
+                                            config.output_k),
+                                           dtype=torch.float32) for _ in range(
+                config.num_sub_heads)]
 
     num_test = 0
     for b_i, batch in enumerate(dataloader):
-        imgs = batch[0].cuda()
+        imgs = batch[0]
+        imgs.cuda() if not config.nocuda else None
 
         if sobel:
             imgs = sobel_process(imgs, config.include_rgb, using_IR=using_IR)
@@ -62,8 +82,12 @@ def _clustering_get_data(config, net, dataloader, sobel=False,
                 soft_predss_all[i][start_i:(
                     start_i + num_test_curr), :] = x_outs_curr
 
-        flat_targets_all[start_i:(start_i + num_test_curr)
-                         ] = flat_targets.cuda()
+        if not config.nocuda:
+            flat_targets_all[start_i:(start_i + num_test_curr)
+                             ] = flat_targets.cuda()
+        else:
+            flat_targets_all[start_i:(start_i + num_test_curr)
+                             ] = flat_targets
 
     flat_predss_all = [flat_predss_all[i][:num_test] for i in
                        range(config.num_sub_heads)]
@@ -129,7 +153,9 @@ def cluster_subheads_eval(config, net,
         test_accs = np.zeros(config.num_sub_heads, dtype=np.float32)
         for i in range(config.num_sub_heads):
             reordered_preds = torch.zeros(num_samples,
-                                          dtype=flat_predss_all[0].dtype).cuda()
+                                          dtype=flat_predss_all[0].dtype)
+            if not config.nocuda:
+                reordered_preds.cuda()
             for pred_i, target_i in all_matches[i]:
                 reordered_preds[flat_predss_all[i] == pred_i] = target_i
             test_acc = _acc(reordered_preds, flat_targets_all,
@@ -215,7 +241,10 @@ def _get_assignment_data_matches(net, mapping_assignment_dataloader, config,
             # reorder predictions to be same cluster assignments as gt_k
             found = torch.zeros(config.output_k)
             reordered_preds = torch.zeros(num_samples,
-                                          dtype=flat_predss_all[0].dtype).cuda()
+                                          dtype=flat_predss_all[0].dtype)
+
+            if not config.nocuda:
+                reordered_preds.cuda()
 
             for pred_i, target_i in match:
                 reordered_preds[flat_predss_all[i] == pred_i] = target_i
@@ -257,10 +286,15 @@ def get_subhead_using_loss(config, dataloaders_head_B, net, sobel, lamb,
 
         all_imgs = torch.zeros(config.batch_sz, dim,
                                config.input_sz,
-                               config.input_sz).cuda()
+                               config.input_sz)
+
         all_imgs_tf = torch.zeros(config.batch_sz, dim,
                                   config.input_sz,
-                                  config.input_sz).cuda()
+                                  config.input_sz)
+
+        if not config.nocuda:
+            all_imgs.cuda()
+            all_imgs_tf.cuda()
 
         imgs_curr = tup[0][0]  # always the first
         curr_batch_sz = imgs_curr.size(0)
@@ -270,10 +304,17 @@ def get_subhead_using_loss(config, dataloaders_head_B, net, sobel, lamb,
 
             actual_batch_start = d_i * curr_batch_sz
             actual_batch_end = actual_batch_start + curr_batch_sz
-            all_imgs[actual_batch_start:actual_batch_end, :, :, :] = \
-                imgs_curr.cuda()
-            all_imgs_tf[actual_batch_start:actual_batch_end, :, :, :] = \
-                imgs_tf_curr.cuda()
+
+            if not config.nocuda:
+                all_imgs[actual_batch_start:actual_batch_end, :, :, :] = \
+                    imgs_curr.cuda()
+                all_imgs_tf[actual_batch_start:actual_batch_end, :, :, :] = \
+                    imgs_tf_curr.cuda()
+            else:
+                all_imgs[actual_batch_start:actual_batch_end, :, :, :] = \
+                    imgs_curr
+                all_imgs_tf[actual_batch_start:actual_batch_end, :, :, :] = \
+                    imgs_tf_curr
 
         curr_total_batch_sz = curr_batch_sz * config.num_dataloaders
         all_imgs = all_imgs[:curr_total_batch_sz, :, :, :]

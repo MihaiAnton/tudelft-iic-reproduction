@@ -13,7 +13,7 @@ def segmentation_eval(config, net,
                       mapping_assignment_dataloader,
                       mapping_test_dataloader,
                       sobel, using_IR=False, verbose=0, return_only=False):
-    torch.cuda.empty_cache()
+    torch.cuda.empty_cache() if not config.nocuda else None
     net.eval()
 
     stats_dict = cluster_subheads_eval(config, net,
@@ -29,7 +29,7 @@ def segmentation_eval(config, net,
     acc = stats_dict["best"]
     is_best = (len(config.epoch_acc) > 0) and (acc > max(config.epoch_acc))
 
-    torch.cuda.empty_cache()
+    torch.cuda.empty_cache() if not config.nocuda else None
 
     if not return_only:
         config.epoch_stats.append(stats_dict)
@@ -59,13 +59,22 @@ def _segmentation_get_data(config, net, dataloader, sobel=False,
         sys.stdout.flush()
 
     # vectorised
-    flat_predss_all = [torch.zeros((num_batches * samples_per_batch),
-                                   dtype=torch.uint8).cuda() for _ in range(
-        config.num_sub_heads)]
-    flat_targets_all = torch.zeros((num_batches * samples_per_batch),
-                                   dtype=torch.uint8).cuda()
-    mask_all = torch.zeros((num_batches * samples_per_batch),
-                           dtype=torch.uint8).cuda()
+    if not config.nocuda:
+        flat_predss_all = [torch.zeros((num_batches * samples_per_batch),
+                                       dtype=torch.uint8).cuda() for _ in range(
+            config.num_sub_heads)]
+        flat_targets_all = torch.zeros((num_batches * samples_per_batch),
+                                       dtype=torch.uint8).cuda()
+        mask_all = torch.zeros((num_batches * samples_per_batch),
+                               dtype=torch.uint8).cuda()
+    else:
+        flat_predss_all = [torch.zeros((num_batches * samples_per_batch),
+                                       dtype=torch.uint8) for _ in range(
+            config.num_sub_heads)]
+        flat_targets_all = torch.zeros((num_batches * samples_per_batch),
+                                       dtype=torch.uint8)
+        mask_all = torch.zeros((num_batches * samples_per_batch),
+                               dtype=torch.uint8)
 
     if verbose > 0:
         batch_start = datetime.now()
@@ -75,10 +84,12 @@ def _segmentation_get_data(config, net, dataloader, sobel=False,
     for b_i, batch in enumerate(dataloader):
 
         imgs, flat_targets, mask = batch
-        imgs = imgs.cuda()
+        if not config.nocuda:
+            imgs = imgs.cuda()
 
         if sobel:
-            imgs = sobel_process(imgs, config.include_rgb, using_IR=using_IR)
+            imgs = sobel_process(
+                imgs, config.include_rgb, using_IR=using_IR, cuda_enabled=not config.nocuda)
 
         with torch.no_grad():
             x_outs = net(imgs)

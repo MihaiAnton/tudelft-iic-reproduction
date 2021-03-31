@@ -43,7 +43,8 @@ _sorted_coarse_name_to_coarse_index = \
 # full loop is run, any results from yield are collected - can return multiple
 # but name only exists once in d
 def _find_parent(name, d):
-    for k, v in d.iteritems():
+    for k in d.keys():
+        v = d[k]
         if isinstance(v, list):
             if name in v:
                 yield k

@@ -78,7 +78,7 @@ parser.add_argument("--out_root", type=str,
 parser.add_argument("--restart", default=False, action="store_true")
 
 parser.add_argument("--save_freq", type=int, default=5)
-parser.add_argument("--test_src", default=False, action="store_true")
+parser.add_argument("--test_code", default=False, action="store_true")
 
 parser.add_argument("--head_B_first", default=False, action="store_true")
 parser.add_argument("--batchnorm_track", default=False, action="store_true")
@@ -133,7 +133,7 @@ config.dataloader_batch_sz = int(config.batch_sz / config.num_dataloaders)
 assert (config.mode == "IID")
 assert ("TwoHead" in config.arch)
 assert (config.output_k_B == config.gt_k)
-config.output_k = config.output_k_B  # for eval src
+config.output_k = config.output_k_B  # for eval code
 assert (config.output_k_A >= config.gt_k)  # sanity
 config.use_doersch_datasets = False
 config.eval_mode = "hung"
@@ -373,7 +373,7 @@ def train():
                     torch.cuda.empty_cache()
 
                 b_i += 1
-                if b_i == 2 and config.test_src:
+                if b_i == 2 and config.test_code:
                     break
 
             avg_loss = float(avg_loss / avg_loss_count)
@@ -455,7 +455,7 @@ def train():
         with open(os.path.join(config.out_dir, "config.txt"), "w") as text_file:
             text_file.write("%s" % config)
 
-        if config.test_src:
+        if config.test_code:
             exit(0)
 
 
