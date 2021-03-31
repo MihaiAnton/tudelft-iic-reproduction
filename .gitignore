@@ -106,3 +106,4 @@ datasets/cocostuff-data
 datasets/potsdam-data
 models/models
 models/models.tar.gz
+out/
