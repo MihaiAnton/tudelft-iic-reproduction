@@ -21,15 +21,15 @@ parser.add_argument("--out_root", type=str,
 given_config = parser.parse_args()
 
 for model_ind in given_config.model_inds:
-  print("Model %d ---------------- " % model_ind)
-  out_dir = os.path.join(given_config.out_root, str(model_ind))
-  reloaded_config_path = os.path.join(out_dir, "config.pickle")
-  print("Loading restarting config from: %s" % reloaded_config_path)
-  with open(reloaded_config_path, "rb") as config_f:
-    config = pickle.load(config_f)
+    print("Model %d ---------------- " % model_ind)
+    out_dir = os.path.join(given_config.out_root, str(model_ind))
+    reloaded_config_path = os.path.join(out_dir, "config.pickle")
+    print("Loading restarting config from: %s" % reloaded_config_path)
+    with open(reloaded_config_path, "rb") as config_f:
+        config = pickle.load(config_f)
 
-  # print stats_dict for best acc
-  best_i = np.argmax(np.array(config.epoch_acc))
-  print("best acc %s" % config.epoch_acc[best_i])
-  print("average subhead acc %s" % config.epoch_avg_subhead_acc[best_i])
-  print(config.epoch_stats[best_i])
+    # print stats_dict for best acc
+    best_i = np.argmax(np.array(config.epoch_acc))
+    print("best acc %s" % config.epoch_acc[best_i])
+    print("average subhead acc %s" % config.epoch_avg_subhead_acc[best_i])
+    print(config.epoch_stats[best_i])

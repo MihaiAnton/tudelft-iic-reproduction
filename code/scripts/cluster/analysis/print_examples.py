@@ -25,13 +25,13 @@ given_config.out_dir = os.path.join(given_config.out_root,
 reloaded_config_path = os.path.join(given_config.out_dir, "config.pickle")
 print("Loading restarting config from: %s" % reloaded_config_path)
 with open(reloaded_config_path, "rb") as config_f:
-  config = pickle.load(config_f)
+    config = pickle.load(config_f)
 assert (config.model_ind == given_config.model_ind)
 
 net = archs.__dict__[config.arch](config)
 model_path = os.path.join(config.out_dir, "best_net.pytorch")
 net.load_state_dict(
-  torch.load(model_path, map_location=lambda storage, loc: storage))
+    torch.load(model_path, map_location=lambda storage, loc: storage))
 
 net.cuda()
 net.eval()
@@ -48,9 +48,9 @@ _, _, _, render_dataloader = cluster_twohead_create_dataloaders(config)
 config.include_rgb = old_value
 
 if "MNIST" in config.dataset:
-  sobel = False
+    sobel = False
 else:
-  sobel = True
+    sobel = True
 
 using_IR = False  # not segmentation
 
@@ -64,70 +64,70 @@ stats_dict = config.epoch_stats[best_i]
 
 print(stats_dict)
 if "best_train_sub_head" in stats_dict:
-  best_head = stats_dict["best_train_sub_head"]
-  print("best_train_sub_head: %d" % best_head)
-  best_match = stats_dict["best_train_sub_head_match"]  # pred -> target
+    best_head = stats_dict["best_train_sub_head"]
+    print("best_train_sub_head: %d" % best_head)
+    best_match = stats_dict["best_train_sub_head_match"]  # pred -> target
 
 if "best_head" in stats_dict:
-  best_head = stats_dict["best_head"]
-  print("best_head: %d" % best_head)
-  best_match = stats_dict["best_head_match"]
+    best_head = stats_dict["best_head"]
+    print("best_head: %d" % best_head)
+    best_match = stats_dict["best_head_match"]
 
 assert (not ("best_train_sub_head" in stats_dict and "best_head" in stats_dict))
 
 best_match_dict = {}
 for pred_i, target_i in best_match:
-  best_match_dict[pred_i] = target_i
+    best_match_dict[pred_i] = target_i
 
 render_out_dir = os.path.join(config.out_dir, "print_examples")
 if not os.path.exists(render_out_dir):
-  os.makedirs(render_out_dir)
+    os.makedirs(render_out_dir)
 
 results_f = os.path.join(render_out_dir, "results.txt")
 
 iterators = (d for d in [dataloader, render_dataloader])
 
 for tup in itertools.izip(*iterators):
-  train_batch = tup[0]
-  render_batch = tup[1]
+    train_batch = tup[0]
+    render_batch = tup[1]
 
-  imgs = train_batch[0].cuda()
-  orig_imgs = render_batch[0]
+    imgs = train_batch[0].cuda()
+    orig_imgs = render_batch[0]
 
-  if sobel:
-    imgs = sobel_process(imgs, config.include_rgb, using_IR=using_IR)
+    if sobel:
+        imgs = sobel_process(imgs, config.include_rgb, using_IR=using_IR)
 
-  flat_targets = train_batch[1]
+    flat_targets = train_batch[1]
 
-  with torch.no_grad():
-    x_outs = net(imgs)
+    with torch.no_grad():
+        x_outs = net(imgs)
 
-  assert (x_outs[0].shape[1] == config.output_k)
-  assert (len(x_outs[0].shape) == 2)
+    assert (x_outs[0].shape[1] == config.output_k)
+    assert (len(x_outs[0].shape) == 2)
 
-  x_outs_curr = x_outs[best_head]
-  flat_preds_curr = torch.argmax(x_outs_curr, dim=1)  # along output_k
+    x_outs_curr = x_outs[best_head]
+    flat_preds_curr = torch.argmax(x_outs_curr, dim=1)  # along output_k
 
-  with open(results_f, "w") as f:
-    for i, img_i in enumerate(img_inds):
-      img = orig_imgs[img_i].numpy()
-      img = img[:3]
-      img = img.transpose((1, 2, 0))  # channels last
-      img *= 255.
+    with open(results_f, "w") as f:
+        for i, img_i in enumerate(img_inds):
+            img = orig_imgs[img_i].numpy()
+            img = img[:3]
+            img = img.transpose((1, 2, 0))  # channels last
+            img *= 255.
 
-      print(img.shape)
-      print(img.max())
-      print(img.min())
+            print(img.shape)
+            print(img.max())
+            print(img.min())
 
-      img = Image.fromarray(img.astype(np.uint8))
-      img.save(os.path.join(render_out_dir, "%d.png" % i))
+            img = Image.fromarray(img.astype(np.uint8))
+            img.save(os.path.join(render_out_dir, "%d.png" % i))
 
-      f.write("(%d) %d %d %d\n" % (i,
-                                   best_match_dict[
-                                     flat_preds_curr[img_i].item()],
-                                   flat_targets[img_i].item(),
-                                   flat_preds_curr[img_i].item()))
+            f.write("(%d) %d %d %d\n" % (i,
+                                         best_match_dict[
+                                             flat_preds_curr[img_i].item()],
+                                         flat_targets[img_i].item(),
+                                         flat_preds_curr[img_i].item()))
 
-  break
+    break
 
 print("finished rendering to: %s" % render_out_dir)

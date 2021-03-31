@@ -30,7 +30,7 @@ parser.add_argument("--rewrite", default=False, action="store_true")
 
 config = parser.parse_args()
 if config.rewrite:
-  assert (not config.dont_save)
+    assert (not config.dont_save)
 
 new_assign_set_szs_pc = config.new_assign_set_szs_pc
 print("given new_assign_set_szs_pc: %s" % new_assign_set_szs_pc)
@@ -42,7 +42,7 @@ reloaded_config_path = os.path.join(given_config.out_root,
                                     "config.pickle")
 print("Loading restarting config from: %s" % reloaded_config_path)
 with open(reloaded_config_path, "rb") as config_f:
-  config = pickle.load(config_f)
+    config = pickle.load(config_f)
 assert (config.model_ind == given_config.model_ind)
 
 assert (config.mode == "IID+")
@@ -56,61 +56,61 @@ assert (config.mapping_test_partitions == [False])
 
 # append to old results
 if not hasattr(config, "assign_set_szs_pc_acc") or given_config.rewrite:
-  print("resetting config.assign_set_szs_pc_acc to empty")
-  config.assign_set_szs_pc_acc = {}
+    print("resetting config.assign_set_szs_pc_acc to empty")
+    config.assign_set_szs_pc_acc = {}
 
 for pc in new_assign_set_szs_pc:
-  print("doing %f" % pc)
-  sysout.flush()
+    print("doing %f" % pc)
+    sysout.flush()
 
-  tf1, tf2, tf3 = greyscale_make_transforms(config)
+    tf1, tf2, tf3 = greyscale_make_transforms(config)
 
-  mapping_assignment_dataloader = \
-    _create_mapping_loader(config, dataset_class, tf3,
-                           partitions=config.mapping_assignment_partitions,
-                           truncate=True, truncate_pc=pc)
+    mapping_assignment_dataloader = \
+        _create_mapping_loader(config, dataset_class, tf3,
+                               partitions=config.mapping_assignment_partitions,
+                               truncate=True, truncate_pc=pc)
 
-  mapping_test_dataloader = \
-    _create_mapping_loader(config, dataset_class, tf3,
-                           partitions=config.mapping_test_partitions)
+    mapping_test_dataloader = \
+        _create_mapping_loader(config, dataset_class, tf3,
+                               partitions=config.mapping_test_partitions)
 
-  print("num assign batches: %d" % len(mapping_assignment_dataloader))
-  num_imgs = len(mapping_assignment_dataloader.dataset)
-  print("num imgs in assign dataset: %d" % num_imgs)
+    print("num assign batches: %d" % len(mapping_assignment_dataloader))
+    num_imgs = len(mapping_assignment_dataloader.dataset)
+    print("num imgs in assign dataset: %d" % num_imgs)
 
-  # networks and optimisers
-  # ------------------------------------------------------
+    # networks and optimisers
+    # ------------------------------------------------------
 
-  net = archs.__dict__[config.arch](config)
-  model_path = os.path.join(config.out_dir, "best_net.pytorch")
-  net.load_state_dict(
-    torch.load(model_path, map_location=lambda storage, loc: storage))
-  net.cuda()
+    net = archs.__dict__[config.arch](config)
+    model_path = os.path.join(config.out_dir, "best_net.pytorch")
+    net.load_state_dict(
+        torch.load(model_path, map_location=lambda storage, loc: storage))
+    net.cuda()
 
-  if given_config.use_eval:
-    print("doing eval mode")
-    net.eval()
+    if given_config.use_eval:
+        print("doing eval mode")
+        net.eval()
 
-  net = torch.nn.DataParallel(net)
-  acc, nmi, ari, _ = cluster_subheads_eval(config, net,
-                                           mapping_assignment_dataloader=mapping_assignment_dataloader,
-                                           mapping_test_dataloader=mapping_test_dataloader,
-                                           sobel=False)
+    net = torch.nn.DataParallel(net)
+    acc, nmi, ari, _ = cluster_subheads_eval(config, net,
+                                             mapping_assignment_dataloader=mapping_assignment_dataloader,
+                                             mapping_test_dataloader=mapping_test_dataloader,
+                                             sobel=False)
 
-  config.assign_set_szs_pc_acc[str(pc)] = (num_imgs, acc)
+    config.assign_set_szs_pc_acc[str(pc)] = (num_imgs, acc)
 
-  print("for model %d assign set sz pc %f, got %f, compared to best stored "
-        "acc %f" % (config.model_ind, pc, acc, max(config.epoch_acc)))
-  print(config.assign_set_szs_pc_acc)
-  sysout.flush()
+    print("for model %d assign set sz pc %f, got %f, compared to best stored "
+          "acc %f" % (config.model_ind, pc, acc, max(config.epoch_acc)))
+    print(config.assign_set_szs_pc_acc)
+    sysout.flush()
 
 if not given_config.dont_save:
-  print("writing to new config")
-  # store to config
-  with open(os.path.join(config.out_dir, "config.pickle"),
-            "wb") as outfile:
-    pickle.dump(config, outfile)
+    print("writing to new config")
+    # store to config
+    with open(os.path.join(config.out_dir, "config.pickle"),
+              "wb") as outfile:
+        pickle.dump(config, outfile)
 
-  with open(os.path.join(config.out_dir, "config.txt"),
-            "w") as text_file:
-    text_file.write("%s" % config)
+    with open(os.path.join(config.out_dir, "config.txt"),
+              "w") as text_file:
+        text_file.write("%s" % config)
