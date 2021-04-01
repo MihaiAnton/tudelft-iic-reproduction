@@ -29,18 +29,19 @@ def setup_config():
         ArgumentParser -- parser with arguments set.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_ind", type=int)
-    parser.add_argument("--arch", type=str)
+    parser.add_argument("--model_ind", type=int, default=555)
+    parser.add_argument("--arch", type=str,
+                        default="SegmentationNet10aTwoHead")
     parser.add_argument("--opt", type=str, default="Adam")
     parser.add_argument("--mode", type=str, default="IID")  # or IID+
 
-    parser.add_argument("--dataset", type=str)
+    parser.add_argument("--dataset", type=str, default="Coco164kCuratedFew")
     parser.add_argument("--dataset_root", type=str)
 
     parser.add_argument("--use_coarse_labels", default=False,
                         action="store_true")  # COCO, Potsdam
     parser.add_argument("--fine_to_coarse_dict", type=str,  # COCO
-                        default="/users/xuji/iid/iid_private/src/datasets"
+                        default="/Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/src/datasets"
                                 "/segmentation/util/out/fine_to_coarse_dict.pickle")
     parser.add_argument("--include_things_labels", default=False,
                         action="store_true")  # COCO
@@ -49,9 +50,9 @@ def setup_config():
     parser.add_argument("--coco_164k_curated_version",
                         type=int, default=-1)  # COCO
 
-    parser.add_argument("--gt_k", type=int)
-    parser.add_argument("--output_k_A", type=int)
-    parser.add_argument("--output_k_B", type=int)
+    parser.add_argument("--gt_k", type=int, default=3)
+    parser.add_argument("--output_k_A", type=int, default=15)
+    parser.add_argument("--output_k_B", type=int, default=3)
 
     parser.add_argument("--lamb_A", type=float, default=1.0)
     parser.add_argument("--lamb_B", type=float, default=1.0)
@@ -65,12 +66,12 @@ def setup_config():
     parser.add_argument("--mask_input", default=False, action="store_true")
 
     parser.add_argument("--num_epochs", type=int, default=1000)
-    parser.add_argument("--batch_sz", type=int)  # num pairs
-    parser.add_argument("--num_dataloaders", type=int, default=3)
+    parser.add_argument("--batch_sz", type=int, default=10)  # num pairs
+    parser.add_argument("--num_dataloaders", type=int, default=1)
     parser.add_argument("--num_sub_heads", type=int, default=5)
 
     parser.add_argument("--out_root", type=str,
-                        default="/scratch/shared/slow/xuji/iid_private")
+                        default="/Users/mihai/Documents/School/TUDelft/DeepLearning/IIC/out")
     parser.add_argument("--restart", default=False, action="store_true")
 
     parser.add_argument("--save_freq", type=int, default=5)

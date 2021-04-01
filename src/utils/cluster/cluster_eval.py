@@ -244,7 +244,7 @@ def _get_assignment_data_matches(net, mapping_assignment_dataloader, config,
                                           dtype=flat_predss_all[0].dtype)
 
             if not config.nocuda:
-                reordered_preds.cuda()
+                reordered_preds = reordered_preds.cuda()
 
             for pred_i, target_i in match:
                 reordered_preds[flat_predss_all[i] == pred_i] = target_i
