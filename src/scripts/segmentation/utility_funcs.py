@@ -1,10 +1,3 @@
-from src.utils.segmentation.IID_losses import IID_segmentation_loss, \
-    IID_segmentation_loss_uncollapsed
-from src.utils.segmentation.segmentation_eval import \
-    segmentation_eval
-from src.utils.cluster.general import config_to_str, get_opt, update_lr, nice
-from src.utils.segmentation.data import segmentation_create_dataloaders
-from src.utils.cluster.transforms import sobel_process
 import src.archs as archs
 import torch
 import numpy as np
@@ -14,123 +7,152 @@ import argparse
 import os
 from datetime import datetime
 import pickle
-
 import matplotlib
+
+from src.utils.segmentation.IID_losses import IID_segmentation_loss, \
+    IID_segmentation_loss_uncollapsed
+from src.utils.segmentation.segmentation_eval import \
+    segmentation_eval
+from src.utils.cluster.general import get_opt, update_lr, nice
+from src.utils.segmentation.data import segmentation_create_dataloaders
+from src.utils.cluster.transforms import sobel_process
+
 matplotlib.use('Agg')
 
 
 # Config Options ----------------------------------------------------------------------
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--model_ind", type=int, required=True)
-parser.add_argument("--arch", type=str, required=True)
-parser.add_argument("--opt", type=str, default="Adam")
-parser.add_argument("--mode", type=str, default="IID")  # or IID+
+def setup_config():
+    """Sets up the config from command line arguments
 
-parser.add_argument("--dataset", type=str, required=True)
-parser.add_argument("--dataset_root", type=str, required=True)
+    Returns:
+        ArgumentParser -- parser with arguments set.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_ind", type=int)
+    parser.add_argument("--arch", type=str)
+    parser.add_argument("--opt", type=str, default="Adam")
+    parser.add_argument("--mode", type=str, default="IID")  # or IID+
 
-parser.add_argument("--use_coarse_labels", default=False,
-                    action="store_true")  # COCO, Potsdam
-parser.add_argument("--fine_to_coarse_dict", type=str,  # COCO
-                    default="/users/xuji/iid/iid_private/src/datasets"
-                            "/segmentation/util/out/fine_to_coarse_dict.pickle")
-parser.add_argument("--include_things_labels", default=False,
-                    action="store_true")  # COCO
-parser.add_argument("--incl_animal_things", default=False,
-                    action="store_true")  # COCO
-parser.add_argument("--coco_164k_curated_version",
-                    type=int, default=-1)  # COCO
+    parser.add_argument("--dataset", type=str)
+    parser.add_argument("--dataset_root", type=str)
 
-parser.add_argument("--gt_k", type=int, required=True)
-parser.add_argument("--output_k_A", type=int, required=True)
-parser.add_argument("--output_k_B", type=int, required=True)
+    parser.add_argument("--use_coarse_labels", default=False,
+                        action="store_true")  # COCO, Potsdam
+    parser.add_argument("--fine_to_coarse_dict", type=str,  # COCO
+                        default="/users/xuji/iid/iid_private/src/datasets"
+                                "/segmentation/util/out/fine_to_coarse_dict.pickle")
+    parser.add_argument("--include_things_labels", default=False,
+                        action="store_true")  # COCO
+    parser.add_argument("--incl_animal_things", default=False,
+                        action="store_true")  # COCO
+    parser.add_argument("--coco_164k_curated_version",
+                        type=int, default=-1)  # COCO
 
-parser.add_argument("--lamb_A", type=float, default=1.0)
-parser.add_argument("--lamb_B", type=float, default=1.0)
+    parser.add_argument("--gt_k", type=int)
+    parser.add_argument("--output_k_A", type=int)
+    parser.add_argument("--output_k_B", type=int)
 
-parser.add_argument("--lr", type=float, default=0.01)
-parser.add_argument("--lr_schedule", type=int, nargs="+", default=[])
-parser.add_argument("--lr_mult", type=float, default=0.1)
+    parser.add_argument("--lamb_A", type=float, default=1.0)
+    parser.add_argument("--lamb_B", type=float, default=1.0)
 
-parser.add_argument("--use_uncollapsed_loss", default=False,
-                    action="store_true")
-parser.add_argument("--mask_input", default=False, action="store_true")
+    parser.add_argument("--lr", type=float, default=0.01)
+    parser.add_argument("--lr_schedule", type=int, nargs="+", default=[])
+    parser.add_argument("--lr_mult", type=float, default=0.1)
 
-parser.add_argument("--num_epochs", type=int, default=1000)
-parser.add_argument("--batch_sz", type=int, required=True)  # num pairs
-parser.add_argument("--num_dataloaders", type=int, default=3)
-parser.add_argument("--num_sub_heads", type=int, default=5)
+    parser.add_argument("--use_uncollapsed_loss", default=False,
+                        action="store_true")
+    parser.add_argument("--mask_input", default=False, action="store_true")
 
-parser.add_argument("--out_root", type=str,
-                    default="/scratch/shared/slow/xuji/iid_private")
-parser.add_argument("--restart", default=False, action="store_true")
+    parser.add_argument("--num_epochs", type=int, default=1000)
+    parser.add_argument("--batch_sz", type=int)  # num pairs
+    parser.add_argument("--num_dataloaders", type=int, default=3)
+    parser.add_argument("--num_sub_heads", type=int, default=5)
 
-parser.add_argument("--save_freq", type=int, default=5)
-parser.add_argument("--test_code", default=False, action="store_true")
+    parser.add_argument("--out_root", type=str,
+                        default="/scratch/shared/slow/xuji/iid_private")
+    parser.add_argument("--restart", default=False, action="store_true")
 
-parser.add_argument("--head_B_first", default=False, action="store_true")
-parser.add_argument("--batchnorm_track", default=False, action="store_true")
+    parser.add_argument("--save_freq", type=int, default=5)
+    parser.add_argument("--test_code", default=False, action="store_true")
 
-# data transforms
-parser.add_argument("--no_sobel", default=False, action="store_true")
+    parser.add_argument("--head_B_first", default=False, action="store_true")
+    parser.add_argument("--batchnorm_track",
+                        default=False, action="store_true")
 
-parser.add_argument("--include_rgb", default=False, action="store_true")
-parser.add_argument("--pre_scale_all", default=False,
-                    action="store_true")  # new
-parser.add_argument("--pre_scale_factor", type=float, default=0.5)  #
+    # data transforms
+    parser.add_argument("--no_sobel", default=False, action="store_true")
 
-parser.add_argument("--input_sz", type=int, default=161)  # half of kazuto1011
+    parser.add_argument("--include_rgb", default=False, action="store_true")
+    parser.add_argument("--pre_scale_all", default=False,
+                        action="store_true")  # new
+    parser.add_argument("--pre_scale_factor", type=float, default=0.5)  #
 
-parser.add_argument("--use_random_scale", default=False,
-                    action="store_true")  # new
-parser.add_argument("--scale_min", type=float, default=0.6)
-parser.add_argument("--scale_max", type=float, default=1.4)
+    parser.add_argument("--input_sz", type=int,
+                        default=161)  # half of kazuto1011
 
-# transforms we learn invariance to
-parser.add_argument("--jitter_brightness", type=float, default=0.4)
-parser.add_argument("--jitter_contrast", type=float, default=0.4)
-parser.add_argument("--jitter_saturation", type=float, default=0.4)
-parser.add_argument("--jitter_hue", type=float, default=0.125)
+    parser.add_argument("--use_random_scale", default=False,
+                        action="store_true")  # new
+    parser.add_argument("--scale_min", type=float, default=0.6)
+    parser.add_argument("--scale_max", type=float, default=1.4)
 
-parser.add_argument("--flip_p", type=float, default=0.5)
+    # transforms we learn invariance to
+    parser.add_argument("--jitter_brightness", type=float, default=0.4)
+    parser.add_argument("--jitter_contrast", type=float, default=0.4)
+    parser.add_argument("--jitter_saturation", type=float, default=0.4)
+    parser.add_argument("--jitter_hue", type=float, default=0.125)
 
-parser.add_argument("--use_random_affine", default=False,
-                    action="store_true")  # new
-parser.add_argument("--aff_min_rot", type=float, default=-30.)  # degrees
-parser.add_argument("--aff_max_rot", type=float, default=30.)  # degrees
-parser.add_argument("--aff_min_shear", type=float, default=-10.)  # degrees
-parser.add_argument("--aff_max_shear", type=float, default=10.)  # degrees
-parser.add_argument("--aff_min_scale", type=float, default=0.8)
-parser.add_argument("--aff_max_scale", type=float, default=1.2)
+    parser.add_argument("--flip_p", type=float, default=0.5)
 
-# local spatial invariance. Dense means done convolutionally. Sparse means done
-#  once in data augmentation phase. These are not mutually exclusive
-parser.add_argument("--half_T_side_dense", type=int, default=0)
-parser.add_argument("--half_T_side_sparse_min", type=int, default=0)
-parser.add_argument("--half_T_side_sparse_max", type=int, default=0)
-parser.add_argument("--nocuda", default=False, action="store_true")
+    parser.add_argument("--use_random_affine", default=False,
+                        action="store_true")  # new
+    parser.add_argument("--aff_min_rot", type=float, default=-30.)  # degrees
+    parser.add_argument("--aff_max_rot", type=float, default=30.)  # degrees
+    parser.add_argument("--aff_min_shear", type=float, default=-10.)  # degrees
+    parser.add_argument("--aff_max_shear", type=float, default=10.)  # degrees
+    parser.add_argument("--aff_min_scale", type=float, default=0.8)
+    parser.add_argument("--aff_max_scale", type=float, default=1.2)
+
+    # local spatial invariance. Dense means done convolutionally. Sparse means done
+    #  once in data augmentation phase. These are not mutually exclusive
+    parser.add_argument("--half_T_side_dense", type=int, default=0)
+    parser.add_argument("--half_T_side_sparse_min", type=int, default=0)
+    parser.add_argument("--half_T_side_sparse_max", type=int, default=0)
+    parser.add_argument("--nocuda", default=False, action="store_true")
+
+    return parser
 
 
-# Helper Functions for the train() loop --------------------------------
+# Helper Functions for the train loop --------------------------------
 
-def load(config, dict_name):
+def load(config, dict_name=None):
     """ Loading the dataloaders, net configs, optimiser and the head order"""
+    """Loads data, net configs, optimiser and the head order
 
-    dataloaders_head_A, mapping_assignment_dataloader, mapping_test_dataloader = \
-        segmentation_create_dataloaders(config)
-    dataloaders_head_B = dataloaders_head_A  # unlike for clustering datasets
+    Params:
+      config: configuration for the training run
+      dict_name: name of dictionary, in case a previous run is resumed
 
+    Returns:
+        [type] -- [description]
+    """
+
+    dataloaders_head_A, mapping_assignment_dataloader, mapping_test_dataloader = segmentation_create_dataloaders(
+        config)
+
+    dataloaders_head_B = dataloaders_head_A
     net = archs.__dict__[config.arch](config)
-    if config.restart:
+
+    if config.restart and dict_name is not None:
         dict = torch.load(os.path.join(config.out_dir, dict_name),
                           map_location=lambda storage, loc: storage)
         net.load_state_dict(dict["net"])
+
     net.cuda() if not config.nocuda else None
     net = torch.nn.DataParallel(net)
     net.train()
-
     optimiser = get_opt(config.opt)(net.module.parameters(), lr=config.lr)
+
     if config.restart:
         optimiser.load_state_dict(dict["optimiser"])
 
@@ -138,11 +160,27 @@ def load(config, dict_name):
     if hasattr(config, "head_B_first") and config.head_B_first:
         heads = ["B", "A"]
 
-    return dataloaders_head_A, dataloaders_head_B, mapping_assignment_dataloader, mapping_test_dataloader, net, optimiser, heads
+    return (dataloaders_head_A,
+            dataloaders_head_B,
+            mapping_assignment_dataloader,
+            mapping_test_dataloader,
+            net,
+            optimiser,
+            heads)
 
 
 def result_log(config, net, mapping_assignment_dataloader, mapping_test_dataloader):
-    """ Logging accuracies, losses, other per epoch stats and setting the loss function to be used """
+    """Logs accuracies, losses, other per epoch stats and setting the loss function to be used
+
+    Params:
+      config: configuration for the training run
+      net: PyTorch network
+      mapping_assignment_dataloader: TODO
+      mapping_test_dataloader: TODO
+
+    Returns:
+        [type] -- [description]
+    """
 
     if config.restart:
         next_epoch = config.last_epoch + 1
@@ -193,12 +231,29 @@ def result_log(config, net, mapping_assignment_dataloader, mapping_test_dataload
 
 
 def training(config, net, current_epoch, next_epoch, heads, dataloaders_head_A, dataloaders_head_B, loss_fn, optimiser):
-    """ Compute loss for head A and B for the current epoch and carry out a backward pass through the net using the optimiser with lr annealing """
+    """Computes loss for head A and B for the current epoch and carries 
+    out a backward pass through the net using the optimiser with lr annealing
+
+    Params:
+      config: TODO
+      net: TODO
+      current_epoch: TODO
+      next_epoch: TODO
+      heads: TODO
+      dataloaders_head_A: TODO
+      dataloaders_head_B: TODO
+      loss_fn: TODO
+      optimiser: TODO
+
+    Returns:
+        PytorchNetwork -- the trained model
+    """
 
     if current_epoch in config.lr_schedule:
         optimiser = update_lr(optimiser, lr_mult=config.lr_mult)
 
     for head_i in range(2):
+
         head = heads[head_i]
         if head == "A":
             dataloaders = dataloaders_head_A
@@ -332,9 +387,22 @@ def training(config, net, current_epoch, next_epoch, heads, dataloaders_head_A, 
         epoch_loss.append(avg_loss)
         epoch_loss_no_lamb.append(avg_loss_no_lamb)
 
+    return net
+
 
 def evaluation(config, net, optimiser, mapping_assignment_dataloader, mapping_test_dataloader, fig, axarr, current_epoch):
-    """ Evaluating and logging results from the net and model checkpointing """
+    """Evaluates and logs results from the net and model checkpointing
+
+    Params:
+      config: TODO
+      net: TODO
+      optimiser: TODO
+      mapping_assignment_dataloader: TODO
+      mapping_test_dataloader: TODO
+      fig: TODO
+      axarr: TODO
+      current_epoch: TODO
+    """
 
     is_best = segmentation_eval(config, net,
                                 mapping_assignment_dataloader=mapping_assignment_dataloader,

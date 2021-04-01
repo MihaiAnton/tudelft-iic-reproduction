@@ -8,7 +8,7 @@
       "name": "Python: Current File",
       "type": "python",
       "request": "launch",
-      "module": "src.scripts.segmentation.segmentation_custom",
+      "module": "src.scripts.segmentation.segmentation_twohead",
       "cwd": "${workspaceFolder}",
       "args": [
         "--restart",

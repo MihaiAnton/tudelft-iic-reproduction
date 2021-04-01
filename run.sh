@@ -18,7 +18,6 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3 && \
         --output_k_A 15 \
         --output_k_B 3 \
         --gt_k 3 \
-        --restart \
         --save_freq 1 \
         --pre_scale_all \
         --pre_scale_factor 0.33 \
