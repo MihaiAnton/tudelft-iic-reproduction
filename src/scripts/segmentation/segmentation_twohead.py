@@ -47,7 +47,7 @@ assert (config.output_k_A >= config.gt_k)  # sanity
 config.use_doersch_datasets = False
 config.eval_mode = "hung"
 set_segmentation_input_channels(config)
-
+print(config.nocuda)
 if not os.path.exists(config.out_dir):
     os.makedirs(config.out_dir)
 
@@ -76,11 +76,13 @@ else:
 
 def train():
 
-    dataloaders_head_A, dataloaders_head_B, mapping_assignment_dataloader, mapping_test_dataloader, net, optimiser, heads = load(config, dict_name)
+    dataloaders_head_A, dataloaders_head_B, mapping_assignment_dataloader, mapping_test_dataloader, net, optimiser, heads = load(
+        config, dict_name)
 
     # Results
     # ----------------------------------------------------------------------
-    next_epoch, fig, axarr, loss_fn = result_log(config, net, mapping_assignment_dataloader, mapping_test_dataloader)
+    next_epoch, fig, axarr, loss_fn = result_log(
+        config, net, mapping_assignment_dataloader, mapping_test_dataloader)
 
     # Train
     # ------------------------------------------------------------------------
@@ -88,8 +90,11 @@ def train():
         print("Starting e_i: %d %s" % (e_i, datetime.now()))
         sys.stdout.flush()
 
-        training(config, net, e_i, next_epoch, heads, dataloaders_head_A, dataloaders_head_B, loss_fn, optimiser) # forward + backward pass
-        evaluation(config, net, optimiser, mapping_assignment_dataloader, mapping_test_dataloader, fig, axarr, e_i) # logging eval_stats and model checkpt.
+        training(config, net, e_i, next_epoch, heads, dataloaders_head_A,
+                 dataloaders_head_B, loss_fn, optimiser)  # forward + backward pass
+        # logging eval_stats and model checkpt.
+        evaluation(config, net, optimiser, mapping_assignment_dataloader,
+                   mapping_test_dataloader, fig, axarr, e_i)
 
 
 train()

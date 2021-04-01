@@ -24,7 +24,7 @@ import src.archs as archs
 
 # Settings ----
 args = argparse.ArgumentParser()
-args.add_argument("--test_src", default=False, action="store_true")
+args.add_argument("--test_code", default=False, action="store_true")
 args.add_argument("--model_ind", type=int, required=True)
 args.add_argument("--net_name", type=str, default="best")
 
@@ -42,7 +42,7 @@ SOURCE_GT_SUFFIX = "_label.tif"
 NUM_SOURCE_IMGS = 38
 NUM_SOURCE_GT = 24
 
-if args.test_src:
+if args.test_code:
     NUM_SOURCE_IMGS = 2
     NUM_SOURCE_GT = 2
 
@@ -136,7 +136,7 @@ def main():
         next_index += OUT_PER_SOURCE
         num_img += 1
 
-        if args.test_src and num_img == NUM_SOURCE_IMGS:
+        if args.test_code and num_img == NUM_SOURCE_IMGS:
             break
 
     assert (next_index == NUM_TRAIN)

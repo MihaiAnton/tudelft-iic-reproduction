@@ -180,7 +180,7 @@ def main():
                         default="/scratch/shared/slow/xuji/iid_private")
     parser.add_argument("--IID_model_ind", type=int, required=True)
     parser.add_argument("--max_num_train", type=int, required=True)
-    parser.add_argument("--test_src", default=False, action="store_true")
+    parser.add_argument("--test_code", default=False, action="store_true")
     parser.add_argument("--do_sift", default=False, action="store_true")
 
     config = parser.parse_args()
@@ -238,7 +238,7 @@ def main():
     print("got training samples")
     sys.stdout.flush()
 
-    if config.test_src:
+    if config.test_code:
         print("testing src, taking 10000 samples only")
         samples = samples[:10000, :]
     else:

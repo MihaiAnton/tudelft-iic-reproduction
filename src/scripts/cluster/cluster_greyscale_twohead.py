@@ -61,7 +61,7 @@ parser.add_argument("--restart", dest="restart", default=False,
                     action="store_true")
 parser.add_argument("--restart_from_best", dest="restart_from_best",
                     default=False, action="store_true")
-parser.add_argument("--test_src", dest="test_src", default=False,
+parser.add_argument("--test_code", dest="test_code", default=False,
                     action="store_true")
 
 parser.add_argument("--save_freq", type=int, default=20)
@@ -393,7 +393,7 @@ def train(render_count=-1):
                         save_progression_count += 1
 
                     b_i += 1
-                    if b_i == 2 and config.test_src:
+                    if b_i == 2 and config.test_code:
                         break
 
             avg_loss = float(avg_loss / avg_loss_count)
@@ -497,7 +497,7 @@ def train(render_count=-1):
                   "w") as text_file:
             text_file.write("%s" % config)
 
-        if config.test_src:
+        if config.test_code:
             exit(0)
 
 
