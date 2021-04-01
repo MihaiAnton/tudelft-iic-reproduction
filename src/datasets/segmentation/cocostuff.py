@@ -141,7 +141,7 @@ class _Coco(data.Dataset):
         # prepare_train, but converted to float32 in main loop because is used
         # multiplicatively in loss
         mask_img1 = torch.from_numpy(mask_img1.astype(np.uint8))
-        mask_img1.cuda() if self.cuda_enabled else None
+        mask_img1 = mask_img1.cuda() if self.cuda_enabled else mask_img1
 
         # make img2 different from img1 (img)
 
@@ -189,9 +189,9 @@ class _Coco(data.Dataset):
         # convert both to channel-first tensor format
         # make them all cuda tensors now, except label, for optimality
         img1 = torch.from_numpy(img1).permute(2, 0, 1)
-        img1.cuda() if self.cuda_enabled else None
+        img1 = img1.cuda() if self.cuda_enabled else img1
         img2 = torch.from_numpy(img2).permute(2, 0, 1)
-        img2.cuda() if self.cuda_enabled else None
+        img2 = img2.cuda() if self.cuda_enabled else img2
 
         # mask if required
         if self.mask_input:
@@ -212,7 +212,7 @@ class _Coco(data.Dataset):
         else:
             affine2_to_1 = torch.zeros([2, 3]).to(
                 torch.float32)  # identity
-            affine2_to_1.cuda() if self.cuda_enabled else None
+            affine2_to_1 = affine2_to_1.cuda() if self.cuda_enabled else affine2_to_1
             affine2_to_1[0, 0] = 1
             affine2_to_1[1, 1] = 1
 
@@ -274,7 +274,7 @@ class _Coco(data.Dataset):
         # prepare_train, but converted to float32 in main loop because is used
         # multiplicatively in loss
         mask_img1 = torch.from_numpy(mask_img1.astype(np.uint8))
-        mask_img1.cuda if self.cuda_enabled else None
+        mask_img1 = mask_img1.cuda() if self.cuda_enabled else mask_img1
 
         # converting to PIL does not change underlying np datatype it seems
         img1 = Image.fromarray(img.astype(np.uint8))
@@ -291,7 +291,7 @@ class _Coco(data.Dataset):
         # convert both to channel-first tensor format
         # make them all cuda tensors now, except label, for optimality
         img1 = torch.from_numpy(img1).permute(2, 0, 1)
-        img1.cuda() if self.cuda_enabled else None
+        img1 = img1.cuda() if self.cuda_enabled else img1
 
         # mask if required
         if self.mask_input:

@@ -293,10 +293,10 @@ def training(config, net, current_epoch, next_epoch, heads, dataloaders_head_A, 
                                         config.input_sz).to(torch.float32)
 
             if not config.nocuda:
-                all_img1.cuda()
-                all_img2.cuda()
-                all_affine2_to_1.cuda()
-                all_mask_img1.cuda()
+                all_img1 = all_img1.cuda()
+                all_img2 = all_img2.cuda()
+                all_affine2_to_1 = all_affine2_to_1.cuda()
+                all_mask_img1 = all_mask_img1.cuda()
 
             curr_batch_sz = tup[0][0].shape[0]
             for d_i in range(config.num_dataloaders):
