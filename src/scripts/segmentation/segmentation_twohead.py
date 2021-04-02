@@ -98,5 +98,7 @@ config, dict_name = config_setup(config)  # defining the configuration
 if config.nocuda:
     net = train(config, dict_name)            # training
 else:
+    torch.cuda.empty_cache()
     with torch.cuda.device(0):
+        torch.cuda.empty_cache()
         net = train(config, dict_name)
