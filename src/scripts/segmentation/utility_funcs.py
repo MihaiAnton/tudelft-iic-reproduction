@@ -373,6 +373,9 @@ def training(config, net, current_epoch, next_epoch, heads, dataloaders_head_A, 
             avg_loss_no_lamb += avg_loss_no_lamb_batch.item()
             avg_loss_count += 1
 
+            if not config.nocuda:
+                avg_loss_batch = avg_loss_batch.cuda()
+
             avg_loss_batch.backward()
             optimiser.step()
 
