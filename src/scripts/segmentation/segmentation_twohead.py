@@ -4,7 +4,7 @@ import os
 import pickle
 import sys
 from datetime import datetime
-
+import torch
 
 from src.utils.segmentation.general import set_segmentation_input_channels
 from src.utils.cluster.general import config_to_str
@@ -95,4 +95,8 @@ parser = setup_config()                   # parsing options
 config = parser.parse_args()
 config, dict_name = config_setup(config)  # defining the configuration
 
-net = train(config, dict_name)            # training
+if config.nocuda:
+    net = train(config, dict_name)            # training
+else:
+    with torch.cuda.device(0):
+        net = train(config, dict_name)
